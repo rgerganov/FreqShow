@@ -43,8 +43,8 @@ class FreqShowModel(object):
 		self.set_max_intensity('AUTO')
 		# Initialize RTL-SDR library.
 		self.sdr = RtlSdr()
-		self.set_center_freq(90.3)
-		self.set_sample_rate(2.4)
+		self.set_center_freq(89.1)
+		self.set_bandwidth(2.4)
 		self.set_gain('AUTO')
 
 	def _clear_intensity(self):
@@ -68,14 +68,15 @@ class FreqShowModel(object):
 			# adding an error message dialog.
 			pass
 
-	def get_sample_rate(self):
-		"""Return sample rate of tuner in megahertz."""
+	def get_bandwidth(self):
+		"""Return bandwidth of tuner in megahertz."""
 		return self.sdr.get_sample_rate()/1000000.0
 
-	def set_sample_rate(self, sample_rate_mhz):
+	def set_bandwidth(self, bandwidth_mhz):
 		"""Set tuner sample rate to provided frequency in megahertz."""
 		try:
-			self.sdr.set_sample_rate(sample_rate_mhz*1000000.0)
+			if bandwidth_mhz > 0.9 and bandwidth_mhz < 3.2:
+				self.sdr.set_sample_rate(bandwidth_mhz*1000000.0)
 		except IOError:
 			# Error setting value, ignore it for now but in the future consider
 			# adding an error message dialog.
@@ -118,7 +119,7 @@ class FreqShowModel(object):
 			return '{0:0.0f}'.format(self.min_intensity)
 
 	def set_min_intensity(self, intensity):
-		"""Set Y axis minimum intensity in decibels (i.e. dB value at bottom of 
+		"""Set Y axis minimum intensity in decibels (i.e. dB value at bottom of
 		spectrograms).  Can also pass 'AUTO' to enable auto scaling of value.
 		"""
 		if intensity == 'AUTO':
@@ -138,7 +139,7 @@ class FreqShowModel(object):
 			return '{0:0.0f}'.format(self.max_intensity)
 
 	def set_max_intensity(self, intensity):
-		"""Set Y axis maximum intensity in decibels (i.e. dB value at top of 
+		"""Set Y axis maximum intensity in decibels (i.e. dB value at top of
 		spectrograms).  Can also pass 'AUTO' to enable auto scaling of value.
 		"""
 		if intensity == 'AUTO':

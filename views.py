@@ -98,10 +98,10 @@ class MessageDialog(ViewBase):
 		self.accept = accept
 		self.cancel = cancel
 		self.buttons = ui.ButtonGrid(model.width, model.height, 4, 5)
-		self.buttons.add(3, 4, 'OK', click=self.accept_click, 
+		self.buttons.add(3, 4, 'OK', click=self.accept_click,
 			bg_color=freqshow.ACCEPT_BG)
 		if cancel is not None:
-			self.buttons.add(0, 4, 'CANCEL', click=self.cancel_click, 
+			self.buttons.add(0, 4, 'CANCEL', click=self.cancel_click,
 				bg_color=freqshow.CANCEL_BG)
 		self.label = ui.render_text(text, size=freqshow.NUM_FONT,
 			fg=freqshow.BUTTON_FG, bg=freqshow.MAIN_BG)
@@ -164,12 +164,12 @@ class NumberDialog(ViewBase):
 		self.buttons.add(3, 3, 'CANCEL', click=self.cancel_click,
 			bg_color=freqshow.CANCEL_BG)
 		self.buttons.add(3, 4, 'ACCEPT', click=self.accept_click,
-			bg_color=freqshow.ACCEPT_BG) 
+			bg_color=freqshow.ACCEPT_BG)
 		if has_auto:
 			self.buttons.add(3, 2, 'AUTO', click=self.auto_click)
 		# Build label text for faster rendering.
 		self.input_rect = (0, 0, self.model.width, self.buttons.row_size)
-		self.label = ui.render_text(label_text, size=freqshow.MAIN_FONT, 
+		self.label = ui.render_text(label_text, size=freqshow.MAIN_FONT,
 			fg=freqshow.INPUT_FG, bg=freqshow.INPUT_BG)
 		self.label_pos = ui.align(self.label.get_rect(), self.input_rect,
 			horizontal=ui.ALIGN_LEFT, hpad=10)
@@ -254,14 +254,14 @@ class SettingsList(ViewBase):
 		self.controller = controller
 		# Create button labels with current model values.
 		centerfreq_text = 'CENTER FREQ: {0:0.2f} MHz'.format(model.get_center_freq())
-		samplerate_text = 'SAMPLE RATE: {0:0.2f} MHz'.format(model.get_sample_rate())
+		bandwidth_text  = 'BANDWIDTH: {0:0.2f} MHz'.format(model.get_bandwidth())
 		gain_text       = 'GAIN: {0} dB'.format(model.get_gain())
 		min_text        = 'MIN: {0} dB'.format(model.get_min_string())
 		max_text        = 'MAX: {0} dB'.format(model.get_max_string())
 		# Create buttons.
 		self.buttons = ui.ButtonGrid(model.width, model.height, 4, 5)
 		self.buttons.add(0, 0, centerfreq_text, colspan=4, click=self.centerfreq_click)
-		self.buttons.add(0, 1, samplerate_text, colspan=4, click=self.sample_click)
+		self.buttons.add(0, 1, bandwidth_text,  colspan=4, click=self.bandwidth_click)
 		self.buttons.add(0, 2, gain_text,       colspan=4, click=self.gain_click)
 		self.buttons.add(0, 3, min_text,        colspan=2, click=self.min_click)
 		self.buttons.add(2, 3, max_text,        colspan=2, click=self.max_click)
@@ -286,19 +286,19 @@ class SettingsList(ViewBase):
 		self.controller.waterfall.clear_waterfall()
 		self.controller.change_to_settings()
 
-	def sample_click(self, button):
-		self.controller.number_dialog('SAMPLE RATE:', 'MHz',
-			initial='{0:0.2f}'.format(self.model.get_sample_rate()),
-			accept=self.sample_accept)
+	def bandwidth_click(self, button):
+		self.controller.number_dialog('BANDWIDTH:', 'MHz',
+			initial='{0:0.2f}'.format(self.model.get_bandwidth()),
+			accept=self.bandwidth_accept)
 
-	def sample_accept(self, value):
-		self.model.set_sample_rate(float(value))
+	def bandwidth_accept(self, value):
+		self.model.set_bandwidth(float(value))
 		self.controller.waterfall.clear_waterfall()
 		self.controller.change_to_settings()
 
 	def gain_click(self, button):
 		self.controller.number_dialog('GAIN:', 'dB',
-			initial=self.model.get_gain(), accept=self.gain_accept, 
+			initial=self.model.get_gain(), accept=self.gain_accept,
 			has_auto=True)
 
 	def gain_accept(self, value):
@@ -308,7 +308,7 @@ class SettingsList(ViewBase):
 
 	def min_click(self, button):
 		self.controller.number_dialog('MIN:', 'dB',
-			initial=self.model.get_min_string(), accept=self.min_accept, 
+			initial=self.model.get_min_string(), accept=self.min_accept,
 			has_auto=True, allow_negative=True)
 
 	def min_accept(self, value):
@@ -318,7 +318,7 @@ class SettingsList(ViewBase):
 
 	def max_click(self, button):
 		self.controller.number_dialog('MAX:', 'dB',
-			initial=self.model.get_max_string(), accept=self.max_accept, 
+			initial=self.model.get_max_string(), accept=self.max_accept,
 			has_auto=True, allow_negative=True)
 
 	def max_accept(self, value):
@@ -333,12 +333,39 @@ class SpectrogramBase(ViewBase):
 	def __init__(self, model, controller):
 		self.model      = model
 		self.controller = controller
-		self.buttons = ui.ButtonGrid(model.width, model.height, 4, 5)
-		self.buttons.add(0, 0, 'CONFIG', click=self.controller.change_to_settings)
-		self.buttons.add(1, 0, 'SWITCH MODE', click=self.controller.toggle_main, colspan=2)
-		self.buttons.add(3, 0, 'QUIT', click=self.quit_click,
-			bg_color=freqshow.CANCEL_BG)
+		self.buttons = ui.ButtonGrid(model.width, model.height, 7, 6)
+		#self.buttons.add(0, 0, 'CONFIG', click=self.controller.change_to_settings)
+		#self.buttons.add(1, 0, 'SWITCH MODE', click=self.controller.toggle_main, colspan=2)
+		#self.buttons.add(3, 0, 'QUIT', click=self.quit_click,
+		#	bg_color=freqshow.CANCEL_BG)
+		self.buttons.add(0, 0, 'Freq-', click=self.dec_freq)
+		self.buttons.add(1, 0, 'Freq+', click=self.inc_freq)
+		self.buttons.add(2, 0, 'Band-', click=self.dec_band)
+		self.buttons.add(3, 0, 'Band+', click=self.inc_band)
+		self.buttons.add(4, 0, 'Rec')
+		self.buttons.add(5, 0, 'Play')
+		self.buttons.add(6, 0, 'Exit')
 		self.overlay_enabled = True
+
+	def dec_freq(self, button):
+		cf = self.model.get_center_freq()
+		cf -= 0.1
+		self.model.set_center_freq(cf)
+
+	def inc_freq(self, button):
+		cf = self.model.get_center_freq()
+		cf += 0.1
+		self.model.set_center_freq(cf)
+
+	def dec_band(self, button):
+		band = self.model.get_bandwidth()
+		band -= 0.1
+		self.model.set_bandwidth(band)
+
+	def inc_band(self, button):
+		band = self.model.get_bandwidth()
+		band += 0.1
+		self.model.set_bandwidth(band)
 
 	def render_spectrogram(self, screen):
 		"""Subclass should implement spectorgram rendering in the provided
@@ -351,13 +378,13 @@ class SpectrogramBase(ViewBase):
 		position.
 		"""
 		y = self.model.height - self.buttons.row_size + padding
-		pygame.draw.lines(screen, freqshow.BUTTON_FG, False, 
+		pygame.draw.lines(screen, freqshow.BUTTON_FG, False,
 			[(x, y), (x-size, y+size), (x+size, y+size), (x, y), (x, y+2*size)])
 
 	def render(self, screen):
 		# Clear screen.
 		screen.fill(freqshow.MAIN_BG)
-		if self.overlay_enabled:
+		if True:
 			# Draw shrunken spectrogram with overlaid buttons and axes values.
 			spect_rect = (0, self.buttons.row_size, self.model.width,
 				self.model.height-2*self.buttons.row_size)
@@ -370,7 +397,7 @@ class SpectrogramBase(ViewBase):
 			bottom_row  = (0, self.model.height-self.buttons.row_size,
 				self.model.width, self.buttons.row_size)
 			freq        = self.model.get_center_freq()
-			bandwidth   = self.model.get_sample_rate()
+			bandwidth   = self.model.get_bandwidth()
 			# Render minimum frequency on left.
 			label = ui.render_text('{0:0.2f} Mhz'.format(freq-bandwidth/2.0),
 				size=freqshow.MAIN_FONT)
@@ -398,15 +425,17 @@ class SpectrogramBase(ViewBase):
 				horizontal=ui.ALIGN_LEFT, vertical=ui.ALIGN_TOP))
 			# Draw the buttons.
 			self.buttons.render(screen)
-		else:
-			# Draw fullscreen spectrogram.
-			self.render_spectrogram(screen)
+		#else:
+		#	# Draw fullscreen spectrogram.
+		#	self.render_spectrogram(screen)
 
 	def click(self, location):
 		mx, my = location
-		if my > self.buttons.row_size and my < 4*self.buttons.row_size:
+		#if my > self.buttons.row_size and my < 4*self.buttons.row_size:
+		if my > self.buttons.row_size:
 			# Handle click on spectrogram.
-			self.overlay_enabled = not self.overlay_enabled
+			# self.overlay_enabled = not self.overlay_enabled
+			self.controller.toggle_main()
 		else:
 			# Handle click on buttons.
 			self.buttons.click(location)

@@ -36,7 +36,7 @@ import ui
 SDR_SAMPLE_SIZE = 1024	# Number of samples to grab from the radio.  Should be
 						# larger than the maximum display width.
 
-CLICK_DEBOUNCE  = 0.4	# Number of seconds to wait between clicks events. Set
+CLICK_DEBOUNCE  = 0.2	# Number of seconds to wait between clicks events. Set
 						# to a few hunded milliseconds to prevent accidental
 						# double clicks from hard screen presses.
 
@@ -69,14 +69,14 @@ ui.Button.border_px    = 2
 
 
 if __name__ == '__main__':
-	# Initialize pygame and SDL to use the PiTFT display and touchscreen.
-	os.putenv('SDL_VIDEODRIVER', 'fbcon')
-	os.putenv('SDL_FBDEV'      , '/dev/fb1')
-	os.putenv('SDL_MOUSEDRV'   , 'TSLIB')
-	os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
+	# Initialize pygame and SDL to use whatever X server is available :)
+	os.putenv('SDL_VIDEODRIVER', 'x11')
+	#os.putenv('SDL_FBDEV'      , '/dev/fb1')
+	#os.putenv('SDL_MOUSEDRV'   , 'TSLIB')
+	#os.putenv('SDL_MOUSEDEV'   , '/dev/input/touchscreen')
 	pygame.display.init()
 	pygame.font.init()
-	pygame.mouse.set_visible(False)
+	pygame.mouse.set_visible(True)
 	# Get size of screen and create main rendering surface.
 	size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
 	screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
@@ -92,13 +92,23 @@ if __name__ == '__main__':
 	time.sleep(2.0)
 	# Main loop to process events and render current view.
 	lastclick = 0
+	mouseDown = False
 	while True:
-		# Process any events (only mouse events for now).
 		for event in pygame.event.get():
-			if event.type is pygame.MOUSEBUTTONDOWN \
-				and (time.time() - lastclick) >= CLICK_DEBOUNCE:
-				lastclick = time.time()
-				fscontroller.current().click(pygame.mouse.get_pos())
+			if event.type is pygame.MOUSEBUTTONDOWN:
+				mouseDown = True
+			if event.type is pygame.MOUSEBUTTONUP:
+				mouseDown = False
+
+		if mouseDown and (time.time() - lastclick) >= CLICK_DEBOUNCE:
+			lastclick = time.time()
+			fscontroller.current().click(pygame.mouse.get_pos())
+		# Process any events (only mouse events for now).
+		#for event in pygame.event.get():
+		#	if event.type is pygame.MOUSEBUTTONDOWN \
+		#		and (time.time() - lastclick) >= CLICK_DEBOUNCE:
+		#		lastclick = time.time()
+		#		fscontroller.current().click(pygame.mouse.get_pos())
 		# Update and render the current view.
 		fscontroller.current().render(screen)
 		pygame.display.update()
