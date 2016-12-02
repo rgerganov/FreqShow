@@ -29,6 +29,7 @@ import hackrf
 import freqshow
 
 
+DEV_NULL = '/dev/null'
 class FreqShowModel(object):
 	def __init__(self, width, height):
 		"""Create main FreqShow application model.  Must provide the width and
@@ -47,7 +48,7 @@ class FreqShowModel(object):
 		self.set_center_freq(89.1)
 		self.set_bandwidth(2.4)
 		self.set_gain('AUTO')
-		self.recording = False
+		self.recording = True
 
 	def _clear_intensity(self):
 		if self.min_auto_scale:
@@ -182,11 +183,28 @@ class FreqShowModel(object):
 		# Return frequency intensities.
 		return freqs
 
-	def get_rec_dest(self):
+	def get_dest(self):
 		return self.sdr.get_record_destination()
 
-	def set_rec_dest(self, dest):
+	def set_dest(self, dest):
 		self.sdr.set_record_destination(dest)
+
+        def is_storing(self):
+                return self.sdr.get_record_destination() != DEV_NULL
+
+        def toggle_storing(self):
+                if self.is_storing():
+                    self.set_dest(DEV_NULL)
+                else:
+                    self.set_dest(hackrf.HACKRF_FILE)
+
+	def refresh(self):
+		self.sdr.stop_process()
+		if self.recording:
+			self.sdr.mode = "-r"
+		else:
+			self.sdr.mode = "-t"
+		self.sdr.start_process()
 
 	def shutdown(self):
 		self.sdr.stop_process()

@@ -33,6 +33,7 @@ import freqshow
 import ui
 
 
+
 # Color and gradient interpolation functions used by waterfall spectrogram.
 def lerp(x, x0, x1, y0, y1):
 	"""Linear interpolation of value y given min and max y values (y0 and y1),
@@ -343,7 +344,7 @@ class SpectrogramBase(ViewBase):
 		self.buttons.add(2, 0, 'Band-', click=self.dec_band)
 		self.buttons.add(3, 0, 'Band+', click=self.inc_band)
 		self.record_button = self.buttons.add(4, 0, 'Record', click=self.toggle_rec)
-		self.buttons.add(5, 0, 'Play')
+		self.play_button = self.buttons.add(5, 0, 'Play', click=self.toggle_play)
 		self.buttons.add(6, 0, 'Exit', click=self.quit_click, bg_color=freqshow.CANCEL_BG)
 		self.overlay_enabled = True
 
@@ -351,30 +352,36 @@ class SpectrogramBase(ViewBase):
 		cf = self.model.get_center_freq()
 		cf -= 0.1
 		self.model.set_center_freq(cf)
+		self.model.refresh()
 
 	def inc_freq(self, button):
 		cf = self.model.get_center_freq()
 		cf += 0.1
 		self.model.set_center_freq(cf)
+		self.model.refresh()
 
 	def dec_band(self, button):
 		band = self.model.get_bandwidth()
 		band -= 0.1
 		self.model.set_bandwidth(band)
+		self.model.refresh()
 
 	def inc_band(self, button):
 		band = self.model.get_bandwidth()
 		band += 0.1
 		self.model.set_bandwidth(band)
+		self.model.refresh()
 
 	def toggle_rec(self, button):
-		if self.model.recording:
-			self.model.set_rec_dest('/dev/null')
-		else:
-			self.model.set_rec_dest("/home/pi/hackrf-recording")
+		# stop playing if currently on
+                self.model.recording = True
+                self.model.toggle_storing()
+		self.model.refresh()
 
-		self.model.recording = not self.model.recording
-		return
+	def toggle_play(self, button):
+                self.model.recording = not self.model.recording
+                self.model.set_dest('/dev/null')
+		self.model.refresh()
 
 	def render_spectrogram(self, screen):
 		"""Subclass should implement spectorgram rendering in the provided
@@ -392,10 +399,14 @@ class SpectrogramBase(ViewBase):
 
 	def update_labels(self):
 		if self.model.recording:
-			self.record_button.set_text("Recording")
+			self.play_button.set_text("Play")
+			if not self.model.is_storing():
+				self.record_button.set_text("Record")
+			else:
+				self.record_button.set_text("Stop Rec")
 		else:
 			self.record_button.set_text("Record")
-
+                        self.play_button.set_text("Stop Play")
 		return
 
 	def render(self, screen):
