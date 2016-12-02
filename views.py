@@ -342,9 +342,9 @@ class SpectrogramBase(ViewBase):
 		self.buttons.add(1, 0, 'Freq+', click=self.inc_freq)
 		self.buttons.add(2, 0, 'Band-', click=self.dec_band)
 		self.buttons.add(3, 0, 'Band+', click=self.inc_band)
-		self.buttons.add(4, 0, 'Rec')
+		self.record_button = self.buttons.add(4, 0, 'Record', click=self.toggle_rec)
 		self.buttons.add(5, 0, 'Play')
-		self.buttons.add(6, 0, 'Exit')
+		self.buttons.add(6, 0, 'Exit', click=self.quit_click, bg_color=freqshow.CANCEL_BG)
 		self.overlay_enabled = True
 
 	def dec_freq(self, button):
@@ -367,6 +367,15 @@ class SpectrogramBase(ViewBase):
 		band += 0.1
 		self.model.set_bandwidth(band)
 
+	def toggle_rec(self, button):
+		if self.model.recording:
+			self.model.set_rec_dest('/dev/null')
+		else:
+			self.model.set_rec_dest("/home/pi/hackrf-recording")
+
+		self.model.recording = not self.model.recording
+		return
+
 	def render_spectrogram(self, screen):
 		"""Subclass should implement spectorgram rendering in the provided
 		surface.
@@ -381,7 +390,16 @@ class SpectrogramBase(ViewBase):
 		pygame.draw.lines(screen, freqshow.BUTTON_FG, False,
 			[(x, y), (x-size, y+size), (x+size, y+size), (x, y), (x, y+2*size)])
 
+	def update_labels(self):
+		if self.model.recording:
+			self.record_button.set_text("Recording")
+		else:
+			self.record_button.set_text("Record")
+
+		return
+
 	def render(self, screen):
+		self.update_labels()
 		# Clear screen.
 		screen.fill(freqshow.MAIN_BG)
 		if True:
@@ -445,6 +463,7 @@ class SpectrogramBase(ViewBase):
 			accept=self.quit_accept)
 
 	def quit_accept(self):
+		self.model.shutdown()
 		sys.exit(0)
 
 

@@ -33,7 +33,7 @@ import ui
 
 
 # Application configuration.
-SDR_SAMPLE_SIZE = 1024	# Number of samples to grab from the radio.  Should be
+SDR_SAMPLE_SIZE = 4096	# Number of samples to grab from the radio.  Should be
 						# larger than the maximum display width.
 
 CLICK_DEBOUNCE  = 0.2	# Number of seconds to wait between clicks events. Set

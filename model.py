@@ -23,7 +23,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import numpy as np
-from rtlsdr import *
+#from rtlsdr import *
+import hackrf
 
 import freqshow
 
@@ -42,10 +43,11 @@ class FreqShowModel(object):
 		self.set_min_intensity('AUTO')
 		self.set_max_intensity('AUTO')
 		# Initialize RTL-SDR library.
-		self.sdr = RtlSdr()
+		self.sdr = hackrf.HackRf()
 		self.set_center_freq(89.1)
 		self.set_bandwidth(2.4)
 		self.set_gain('AUTO')
+		self.recording = False
 
 	def _clear_intensity(self):
 		if self.min_auto_scale:
@@ -179,3 +181,13 @@ class FreqShowModel(object):
 		self.range = self.max_intensity - self.min_intensity
 		# Return frequency intensities.
 		return freqs
+
+	def get_rec_dest(self):
+		return self.sdr.get_record_destination()
+
+	def set_rec_dest(self, dest):
+		self.sdr.set_record_destination(dest)
+
+	def shutdown(self):
+		self.sdr.stop_process()
+

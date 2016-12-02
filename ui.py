@@ -92,10 +92,7 @@ class Button(object):
 		width -= 2*self.padding_px
 		height -= 2*self.padding_px
 		self.rect = (x, y, width, height)
-		# Draw label centered in the button for quick rendering later.
-		self.label = render_text(text, size=self.font_size, fg=self.fg_color,
-			bg=self.bg_color)
-		self.label_pos = align(self.label.get_rect(), self.rect)
+		self.set_text(text)
 
 	def render(self, screen):
 		"""Render the button on the provided surface."""
@@ -112,6 +109,12 @@ class Button(object):
 		if mx >= x and mx <= (x + width) and my >= y and my <= (y + height) \
 			and self.click_func is not None:
 			self.click_func(self)
+
+	def set_text(self, text):
+		# Draw label centered in the button for quick rendering later.
+		self.label = render_text(text, size=self.font_size, fg=self.fg_color,
+			bg=self.bg_color)
+		self.label_pos = align(self.label.get_rect(), self.rect)
 
 
 class ButtonGrid(object):
@@ -133,7 +136,9 @@ class ButtonGrid(object):
 		y = row*self.row_size
 		width = colspan*self.col_size
 		height = rowspan*self.row_size
-		self.buttons.append(Button((x,y,width,height), text, **kwargs))
+		button = Button((x,y,width,height), text, **kwargs)
+		self.buttons.append(button)
+		return button
 
 	def render(self, screen):
 		"""Render buttons on the provided surface."""
