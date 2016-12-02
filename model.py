@@ -45,10 +45,11 @@ class FreqShowModel(object):
 		self.set_max_intensity('AUTO')
 		# Initialize RTL-SDR library.
 		self.sdr = hackrf.HackRf()
-		self.set_center_freq(89.1)
-		self.set_bandwidth(2.4)
+		self.set_center_freq(433)
+		self.set_bandwidth(2)
 		self.set_gain('AUTO')
 		self.recording = True
+                self.sdr.start_process()
 
 	def _clear_intensity(self):
 		if self.min_auto_scale:
