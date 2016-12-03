@@ -266,7 +266,7 @@ class SettingsList(ViewBase):
 		self.buttons.add(0, 2, gain_text,       colspan=4, click=self.gain_click)
 		self.buttons.add(0, 3, min_text,        colspan=2, click=self.min_click)
 		self.buttons.add(2, 3, max_text,        colspan=2, click=self.max_click)
-		self.buttons.add(0, 4, 'BACK', click=self.controller.change_to_main)
+		self.buttons.add(0, 4, 'BACK', click=self.back_clicked)
 
 	def render(self, screen):
 		# Clear view and render buttons.
@@ -327,6 +327,9 @@ class SettingsList(ViewBase):
 		self.controller.waterfall.clear_waterfall()
 		self.controller.change_to_settings()
 
+	def back_clicked(self, value):
+		self.controller.change_to_main()
+		self.model.refresh()
 
 class SpectrogramBase(ViewBase):
 	"""Base class for a spectrogram view."""
@@ -335,14 +338,14 @@ class SpectrogramBase(ViewBase):
 		self.model      = model
 		self.controller = controller
 		self.buttons = ui.ButtonGrid(model.width, model.height, 7, 6)
-		#self.buttons.add(0, 0, 'CONFIG', click=self.controller.change_to_settings)
+		self.buttons.add(0, 0, 'CONFIG', click=self.controller.change_to_settings)
 		#self.buttons.add(1, 0, 'SWITCH MODE', click=self.controller.toggle_main, colspan=2)
 		#self.buttons.add(3, 0, 'QUIT', click=self.quit_click,
 		#	bg_color=freqshow.CANCEL_BG)
-		self.buttons.add(0, 0, 'Freq-', click=self.dec_freq)
-		self.buttons.add(1, 0, 'Freq+', click=self.inc_freq)
-		self.buttons.add(2, 0, 'Band-', click=self.dec_band)
-		self.buttons.add(3, 0, 'Band+', click=self.inc_band)
+		self.buttons.add(1, 0, 'Freq-', click=self.dec_freq)
+		self.buttons.add(2, 0, 'Freq+', click=self.inc_freq)
+		#self.buttons.add(2, 0, 'Band-', click=self.dec_band)
+		#self.buttons.add(3, 0, 'Band+', click=self.inc_band)
 		self.record_button = self.buttons.add(4, 0, 'Record', click=self.toggle_rec)
 		self.play_button = self.buttons.add(5, 0, 'Play', click=self.toggle_play)
 		self.buttons.add(6, 0, 'Exit', click=self.quit_click, bg_color=freqshow.CANCEL_BG)
